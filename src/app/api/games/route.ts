@@ -1,7 +1,6 @@
 import getSession from "@/lib/getSession";
+import prisma from "@/lib/prisma"; // Assuming Prisma client is set up in lib/prisma.ts
 import { GamesPage } from "@/lib/types";
-import { GameType, GameSchema } from "@/lib/validation";
-import ky from "ky";
 import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -14,28 +13,13 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const RAWG_API_KEY = process.env.RAWG_API_KEY;
-    const RAWG_BASE_URL = process.env.RAWG_BASE_URL;
-
-    if (!RAWG_API_KEY || !RAWG_BASE_URL) {
-      return new Response(
-        JSON.stringify({ error: "Missing API configuration" }),
-        { status: 500, headers: { "Content-Type": "application/json" } },
-      );
-    }
-
     const cursor = parseInt(req.nextUrl.searchParams.get("cursor") || "1", 10);
     const pageSize = 20;
 
-    const response = await ky(`${RAWG_BASE_URL}/games`, {
-      searchParams: {
-        key: RAWG_API_KEY,
-        page: cursor,
-        page_size: pageSize,
-      },
-    }).json<{ results: GameType[] }>();
-
-    const games = response.results.map((game) => GameSchema.parse(game));
+    const games = await prisma.game.findMany({
+      skip: (cursor - 1) * pageSize,
+      take: pageSize,
+    });
 
     const nextCursor = games.length === pageSize ? String(cursor + 1) : null;
 
@@ -49,7 +33,7 @@ export async function GET(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("RAWG API error:", error);
+    console.error("Database error:", error);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

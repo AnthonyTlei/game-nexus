@@ -73,3 +73,16 @@ model VerificationToken {
   @@id([identifier, token])
   @@map("verification_tokens")
 }
+
+model Game {
+  id              Int       @id @unique
+  slug            String
+  name            String
+  released        DateTime?
+  tba             Boolean
+  backgroundImage String?
+  rating          Float?
+  added           Int?
+  genres          String[]
+  tags            String[]
+}
