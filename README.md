@@ -32,7 +32,7 @@ Game Nexus is an online game catalogue that allows users to explore, track, and 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/game-nexus.git
+   git clone https://github.com/AnthonyTlei/game-nexus.git
    cd game-nexus
    ```
 2. Install dependencies:
