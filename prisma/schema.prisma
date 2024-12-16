@@ -5,8 +5,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 enum UserRole {
@@ -20,10 +20,11 @@ model User {
   email          String?   @unique
   hashedPassword String?
   emailVerified  DateTime?
-  image          String?
   accounts       Account[]
   sessions       Session[]
+  profile        Profile?
   role           UserRole? @default(USER)
+  image          String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -51,6 +52,15 @@ model Account {
 
   @@id([provider, providerAccountId])
   @@map("accounts")
+}
+
+model Profile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+  games  Int[]
+
+  @@map("profiles")
 }
 
 model Session {
@@ -85,4 +95,7 @@ model Game {
   added           Int?
   genres          String[]
   tags            String[]
+  vector          Float[]
+
+  @@map("games")
 }
